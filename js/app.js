@@ -559,6 +559,19 @@ const App = {
                 this.refreshCatalog();
             }
         });
+
+        document.addEventListener('focusin', (e) => {
+            if (e.target.id === 'search-input') {
+                const tabBar = document.querySelector('.tab-bar');
+                if (tabBar) tabBar.style.display = 'none';
+            }
+        });
+        document.addEventListener('focusout', (e) => {
+            if (e.target.id === 'search-input') {
+                const tabBar = document.querySelector('.tab-bar');
+                if (tabBar) tabBar.style.display = '';
+            }
+        });
     },
 
     switchPage(page) {
@@ -575,8 +588,14 @@ const App = {
     },
 
     refreshCatalog() {
-        const section = document.getElementById('page-catalog');
-        if (section) section.innerHTML = this.renderCatalog();
+        const grid = document.querySelector('.product-grid');
+        if (grid) {
+            const products = this.getFilteredProducts();
+            grid.innerHTML = products.map(p => this.renderProductCard(p)).join('');
+        } else {
+            const section = document.getElementById('page-catalog');
+            if (section) section.innerHTML = this.renderCatalog();
+        }
     },
 
     refreshPage() {
