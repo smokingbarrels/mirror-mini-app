@@ -250,7 +250,7 @@ const App = {
     addToCart() {
         if (!this.detailProduct) return;
         if (!this.detailSize) {
-            alert('Выберите размер');
+            this.showToast('Выберите размер');
             return;
         }
         const existing = this.cart.find(
@@ -459,7 +459,7 @@ const App = {
 
             // Detail: favorite
             if (e.target.closest('[data-fav-detail]')) {
-                alert('Demo: избранное в разработке');
+                this.showToast('Избранное в разработке');
                 return;
             }
 
@@ -538,7 +538,7 @@ const App = {
             }
 
             if (e.target.closest('#checkout-btn')) {
-                alert('Demo: оформление заказа недоступно');
+                this.showToast('Оформление заказа недоступно');
                 return;
             }
 
@@ -547,7 +547,7 @@ const App = {
                 if (action === 'Наш ТГ канал') {
                     window.open('https://t.me/mirr_r', '_blank');
                 } else {
-                    alert('Demo: раздел в разработке');
+                    this.showToast('Раздел в разработке');
                 }
                 return;
             }
@@ -620,6 +620,20 @@ const App = {
     formatPrice(price) {
         if (!price) return '??? ₽';
         return price.toLocaleString('ru-RU') + ' ₽';
+    },
+
+    showToast(message) {
+        const existing = document.querySelector('.app-toast');
+        if (existing) existing.remove();
+        const toast = document.createElement('div');
+        toast.className = 'app-toast';
+        toast.textContent = message;
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => toast.classList.add('show'));
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
     }
 };
 
