@@ -82,11 +82,19 @@ const App = {
         </div>`;
     },
 
+    renderImage(src) {
+        if (src && src !== 'placeholder') {
+            return `<img src="${src}" alt="">`;
+        }
+        return `<span class="product-placeholder">&#128085;</span>`;
+    },
+
     renderProductCard(product) {
+        const img = product.images[0];
         return `
         <div class="product-card" data-id="${product.id}">
             <div class="product-image-wrap">
-                <span class="product-placeholder">&#128085;</span>
+                ${this.renderImage(img)}
                 ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
                 <div class="product-cart-btn" data-quick-add="${product.id}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -148,8 +156,8 @@ const App = {
         <div class="detail-gallery">
             ${product.badge ? `<span class="gallery-badge">${product.badge}</span>` : ''}
             <div class="gallery-track" id="gallery-track" style="transform:translateX(-${this.detailSlide * 100}%)">
-                ${slides.map(() => `
-                    <div class="gallery-slide">&#128085;</div>
+                ${slides.map(src => `
+                    <div class="gallery-slide">${src && src !== 'placeholder' ? `<img src="${src}" style="width:100%;height:100%;object-fit:cover;">` : '&#128085;'}</div>
                 `).join('')}
             </div>
             ${slides.length > 1 ? `
@@ -163,8 +171,8 @@ const App = {
         </div>
 
         <div class="gallery-thumbnails">
-            ${slides.map((_, i) => `
-                <div class="gallery-thumb${i === this.detailSlide ? ' active' : ''}" data-thumb="${i}">&#128085;</div>
+            ${slides.map((src, i) => `
+                <div class="gallery-thumb${i === this.detailSlide ? ' active' : ''}" data-thumb="${i}">${src && src !== 'placeholder' ? `<img src="${src}" style="width:100%;height:100%;object-fit:cover;">` : '&#128085;'}</div>
             `).join('')}
         </div>
 
@@ -257,7 +265,8 @@ const App = {
                 price: this.detailProduct.price,
                 size: this.detailSize,
                 qty: this.detailQty,
-                shippingDays: this.detailProduct.shippingDays
+                shippingDays: this.detailProduct.shippingDays,
+                image: this.detailProduct.images && this.detailProduct.images[0] || null
             });
         }
         this.updateCartBadge();
@@ -275,7 +284,7 @@ const App = {
             <h1 class="catalog-title">Корзина</h1>
             ${this.cart.map((item, i) => `
             <div class="cart-item" style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);align-items:flex-start;">
-                <div style="width:70px;height:70px;background:#222;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:28px;">&#128085;</div>
+                <div style="width:70px;height:70px;background:#222;border-radius:8px;flex-shrink:0;overflow:hidden;">${item.image ? `<img src="${item.image}" style="width:100%;height:100%;object-fit:cover;">` : `<div style="display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:28px;">&#128085;</div>`}</div>
                 <div style="flex:1;min-width:0;">
                     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
                         <div style="font-size:13px;font-weight:500;line-height:1.3;">${item.name}</div>
@@ -534,7 +543,12 @@ const App = {
             }
 
             if (e.target.closest('[data-profile-action]')) {
-                alert('Demo: раздел в разработке');
+                const action = e.target.closest('[data-profile-action]').dataset.profileAction;
+                if (action === 'Наш ТГ канал') {
+                    window.open('https://t.me/mirr_r', '_blank');
+                } else {
+                    alert('Demo: раздел в разработке');
+                }
                 return;
             }
         });
@@ -604,6 +618,7 @@ const App = {
     },
 
     formatPrice(price) {
+        if (!price) return '??? ₽';
         return price.toLocaleString('ru-RU') + ' ₽';
     }
 };
