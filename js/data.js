@@ -3,7 +3,7 @@ const PRODUCTS = [
         id: 1,
         name: 'Лонгслив "mirror"',
         price: 85,
-        images: ['assets/img/longsleeve-mirror.png'],
+        images: ['assets/img/longsleeve-mirror.png', 'assets/img/size-chart.jpg'],
         category: 'longsleeves',
         sizes: ['S', 'M', 'L']
     }
