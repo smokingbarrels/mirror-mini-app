@@ -243,22 +243,6 @@ const App = {
                 <span>Отправка до ${product.shippingDays || 10} рабочих дней</span>
             </div>
 
-            <div class="accordion">
-                <div class="accordion-item">
-                    <div class="accordion-header" data-accordion="composition">
-                        <span>Состав</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                    </div>
-                    <div class="accordion-content" id="acc-composition">${product.composition}</div>
-                </div>
-                <div class="accordion-item">
-                    <div class="accordion-header" data-accordion="care">
-                        <span>Уход</span>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-                    </div>
-                    <div class="accordion-content" id="acc-care">${product.care}</div>
-                </div>
-            </div>
         </div>
 
         <div class="detail-bottom-bar">
