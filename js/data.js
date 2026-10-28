@@ -5,7 +5,8 @@ const PRODUCTS = [
         price: 85,
         images: ['assets/img/longsleeve-mirror.png', 'assets/img/longsleeve-mirror-2.png', 'assets/img/size-chart.jpg'],
         category: 'longsleeves',
-        sizes: ['S', 'M', 'L']
+        sizes: ['S', 'M', 'L'],
+        description: 'Все размеры стандартные. Размерная сетка в последнем изображении.\n\nВысококачественная ткань, которая не теряет вид после множества стирок.\n100% хлопок.'
     }
 ];
 

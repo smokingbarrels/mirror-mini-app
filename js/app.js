@@ -221,8 +221,8 @@ const App = {
                 </button>
             </div>
 
-            <div class="detail-description-label">Описание</div>
-            <div class="detail-description">${product.description}</div>
+            ${product.description ? `<div class="detail-description-label">Описание</div>
+            <div class="detail-description">${product.description.replace(/\n/g, '<br>')}</div>` : ''}
 
             <div class="detail-section-label">Размер *</div>
             <div class="size-selector">
