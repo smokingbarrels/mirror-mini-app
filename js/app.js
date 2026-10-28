@@ -240,7 +240,7 @@ const App = {
 
             <div class="shipping-notice${this.detailSize ? '' : ' hidden'}" id="shipping-notice">
                 <span class="shipping-dot"></span>
-                <span>Отправка до ${product.shippingDays} рабочих дней</span>
+                <span>Отправка до ${product.shippingDays || 10} рабочих дней</span>
             </div>
 
             <div class="accordion">

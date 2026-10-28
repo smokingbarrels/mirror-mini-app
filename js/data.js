@@ -6,6 +6,7 @@ const PRODUCTS = [
         images: ['assets/img/longsleeve-mirror.png', 'assets/img/longsleeve-mirror-2.png', 'assets/img/size-chart.jpg'],
         category: 'longsleeves',
         sizes: ['S', 'M', 'L'],
+        shippingDays: 10,
         description: 'Все размеры стандартные. Размерная сетка в последнем изображении.\n\nВысококачественная ткань, которая не теряет вид после множества стирок.\n100% хлопок.'
     }
 ];
