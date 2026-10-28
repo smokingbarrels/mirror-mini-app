@@ -218,7 +218,7 @@ body {
 .product-image-wrap img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 .product-placeholder {
@@ -465,6 +465,12 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 80px;
+}
+
+.gallery-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .gallery-arrow {
