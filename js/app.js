@@ -81,11 +81,11 @@ const App = {
     renderCatalog() {
         const products = this.getFilteredProducts();
         return `
-        <div class="categories">
+        ${CATEGORIES.length > 1 ? `<div class="categories">
             ${CATEGORIES.map(c => `
-                <button class="category-tag${this.activeCategory === c ? ' active' : ''}" data-category="${c}">${c}</button>
+                <button class="category-tag${this.activeCategory === c.value ? ' active' : ''}" data-category="${c.value}">${c.label}</button>
             `).join('')}
-        </div>
+        </div>` : ''}
         <div class="catalog-section">
             <h1 class="catalog-title">Каталог</h1>
             <div class="search-bar">
