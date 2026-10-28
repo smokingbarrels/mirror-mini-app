@@ -5,7 +5,7 @@ const PRODUCTS = [
         price: 85,
         images: ['assets/img/longsleeve-mirror.png'],
         category: 'longsleeves',
-        sizes: ['S', 'M', 'L', 'XL']
+        sizes: ['S', 'M', 'L']
     }
 ];
 
