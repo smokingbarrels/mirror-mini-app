@@ -1,6 +1,18 @@
-const PRODUCTS = [];
+const PRODUCTS = [
+    {
+        id: 1,
+        name: 'Лонгслив "mirror"',
+        price: 85,
+        image: 'assets/img/longsleeve-mirror.png',
+        category: 'longsleeves',
+        sizes: ['S', 'M', 'L', 'XL']
+    }
+];
 
-const CATEGORIES = [];
+const CATEGORIES = [
+    { value: 'all', label: 'Все' },
+    { value: 'longsleeves', label: 'Лонгсливы' }
+];
 
 const SORT_OPTIONS = [
     { value: 'default', label: 'По умолчанию' },

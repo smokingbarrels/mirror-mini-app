@@ -765,8 +765,8 @@ const App = {
     },
 
     formatPrice(price) {
-        if (!price) return '??? ₽';
-        return price.toLocaleString('ru-RU') + ' ₽';
+        if (!price) return '??? BYN';
+        return price.toLocaleString('ru-RU') + ' BYN';
     },
 
     showOrderForm() {
