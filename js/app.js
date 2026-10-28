@@ -121,7 +121,7 @@ const App = {
     },
 
     renderProductCard(product) {
-        const img = product.images[0];
+        const img = (product.images || [product.image])[0];
         const isFav = this.isFavorite(product.id);
         return `
         <div class="product-card" data-id="${product.id}">
@@ -176,7 +176,7 @@ const App = {
     },
 
     renderProductDetail(product) {
-        const slides = product.images;
+        const slides = product.images || [product.image];
         return `
         <div class="detail-header">
             <button class="detail-back" data-detail-back>
