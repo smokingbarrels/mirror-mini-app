@@ -781,14 +781,6 @@ const App = {
                     <h2 style="font-size:18px;font-weight:700;">Оформить заявку</h2>
                     <button id="order-close" style="background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;">×</button>
                 </div>
-                <div style="margin-bottom:16px;">
-                    <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Имя *</label>
-                    <input type="text" id="order-name" placeholder="Ваше имя" style="width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;">
-                </div>
-                <div style="margin-bottom:16px;">
-                    <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Телефон или Telegram *</label>
-                    <input type="text" id="order-contact" placeholder="+7... или @username" style="width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;">
-                </div>
                 <div style="margin-bottom:20px;">
                     <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Комментарий</label>
                     <textarea id="order-comment" placeholder="Адрес, пожелания..." rows="3" style="width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;resize:none;"></textarea>
@@ -804,14 +796,7 @@ const App = {
     },
 
     async submitOrder() {
-        const name = document.getElementById('order-name')?.value.trim();
-        const contact = document.getElementById('order-contact')?.value.trim();
         const comment = document.getElementById('order-comment')?.value.trim();
-
-        if (!name || !contact) {
-            this.showToast('Заполните имя и контакт');
-            return;
-        }
 
         const btn = document.getElementById('order-submit');
         if (btn) {
@@ -822,9 +807,10 @@ const App = {
         const items = this.cart.map(i => `• ${i.name} (${i.size}) ×${i.qty} — ${this.formatPrice(i.price * i.qty)}`).join('\n');
         const total = this.cart.reduce((s, i) => s + i.price * i.qty, 0);
         const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
-        const tgInfo = tgUser ? `\nTG: @${tgUser.username || tgUser.first_name} (id: ${tgUser.id})` : '';
+        const name = tgUser?.first_name || 'Пользователь';
+        const username = tgUser?.username ? `@${tgUser.username}` : `id: ${tgUser?.id || 'неизвестен'}`;
 
-        const text = `🛍 Новая заявка!\n\nИмя: ${name}\nКонтакт: ${contact}${tgInfo}${comment ? '\nКомментарий: ' + comment : ''}\n\nТовары:\n${items}\n\nИтого: ${this.formatPrice(total)}`;
+        const text = `🛍 Новая заявка!\n\n${name} (${username})${comment ? '\nКомментарий: ' + comment : ''}\n\nТовары:\n${items}\n\nИтого: ${this.formatPrice(total)}`;
 
         try {
             const resp = await fetch('https://mirror-mini-app.vercel.app/api/webhook', {
@@ -837,8 +823,7 @@ const App = {
                 date: new Date().toLocaleDateString('ru-RU'),
                 items: this.cart.map(i => ({ name: i.name, size: i.size, qty: i.qty, price: i.price, image: i.image })),
                 total,
-                name,
-                contact
+                tgUser: username
             };
             const history = JSON.parse(localStorage.getItem('mm_orders') || '[]');
             history.unshift(order);
