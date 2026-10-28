@@ -776,3 +776,47 @@ body {
     opacity: 1;
     transform: translateX(-50%) translateY(0);
 }
+
+.product-fav-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    background: rgba(0,0,0,0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+    z-index: 2;
+}
+.product-fav-btn.active {
+    color: #ff4466;
+}
+.btn-favorite.active {
+    color: #ff4466;
+}
+
+.order-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 9999;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+}
+.order-form {
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    padding: 24px 16px 32px;
+    width: 100%;
+    max-width: 500px;
+    max-height: 90vh;
+    overflow-y: auto;
+}

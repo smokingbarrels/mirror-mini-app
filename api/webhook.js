@@ -26,15 +26,32 @@ function sendMessage(chatId, text, replyMarkup) {
     });
 }
 
+const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || '1225606022';
+
 module.exports = async (req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'POST') {
         return res.status(200).send('OK');
     }
 
     try {
-        const update = req.body;
-        const msg = update.message;
+        const body = req.body;
 
+        // Order from mini-app
+        if (body.order) {
+            await sendMessage(ADMIN_CHAT_ID, body.order.text);
+            return res.status(200).json({ ok: true });
+        }
+
+        // Telegram webhook update
+        const msg = body.message;
         if (msg && msg.text === '/start') {
             const firstName = msg.from.first_name || '';
             await sendMessage(msg.chat.id,

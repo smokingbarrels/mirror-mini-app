@@ -3,6 +3,7 @@
 const App = {
     currentPage: 'catalog',
     cart: [],
+    favorites: [],
     currentSort: 'default',
     searchQuery: '',
     activeCategory: null,
@@ -16,8 +17,38 @@ const App = {
             window.Telegram.WebApp.ready();
             window.Telegram.WebApp.expand();
         }
+        try {
+            const saved = localStorage.getItem('mirror_favorites');
+            if (saved) this.favorites = JSON.parse(saved);
+        } catch(e) {}
+        try {
+            const savedCart = localStorage.getItem('mirror_cart');
+            if (savedCart) this.cart = JSON.parse(savedCart);
+        } catch(e) {}
         this.render();
         this.bindEvents();
+    },
+
+    saveFavorites() {
+        try { localStorage.setItem('mirror_favorites', JSON.stringify(this.favorites)); } catch(e) {}
+    },
+
+    saveCart() {
+        try { localStorage.setItem('mirror_cart', JSON.stringify(this.cart)); } catch(e) {}
+    },
+
+    isFavorite(id) {
+        return this.favorites.includes(id);
+    },
+
+    toggleFavorite(id) {
+        const idx = this.favorites.indexOf(id);
+        if (idx >= 0) {
+            this.favorites.splice(idx, 1);
+        } else {
+            this.favorites.push(id);
+        }
+        this.saveFavorites();
     },
 
     render() {
@@ -28,7 +59,7 @@ const App = {
                 ${this.renderCatalog()}
             </div>
             <div id="page-favorites" class="page">
-                ${this.renderStub('heart', 'Избранное', 'Скоро будет доступно')}
+                ${this.renderFavorites()}
             </div>
             <div id="page-cart" class="page">
                 ${this.renderCart()}
@@ -91,14 +122,15 @@ const App = {
 
     renderProductCard(product) {
         const img = product.images[0];
+        const isFav = this.isFavorite(product.id);
         return `
         <div class="product-card" data-id="${product.id}">
             <div class="product-image-wrap">
                 ${this.renderImage(img)}
                 ${product.badge ? `<span class="product-badge">${product.badge}</span>` : ''}
-                <div class="product-cart-btn" data-quick-add="${product.id}">
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                <div class="product-fav-btn${isFav ? ' active' : ''}" data-fav-toggle="${product.id}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="${isFav ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                     </svg>
                 </div>
             </div>
@@ -231,8 +263,8 @@ const App = {
 
         <div class="detail-bottom-bar">
             <button class="btn-add-cart" data-add-to-cart>Добавить в корзину</button>
-            <button class="btn-favorite" data-fav-detail>
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button class="btn-favorite${this.isFavorite(product.id) ? ' active' : ''}" data-fav-detail="${product.id}">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="${this.isFavorite(product.id) ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
                 </svg>
             </button>
@@ -270,6 +302,7 @@ const App = {
             });
         }
         this.updateCartBadge();
+        this.saveCart();
         this.closeProduct();
         this.switchPage('cart');
     },
@@ -340,6 +373,20 @@ const App = {
                 <span class="profile-item-label">${item.icon} ${item.label}</span>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
             </div>`).join('')}
+        </div>`;
+    },
+
+    renderFavorites() {
+        const favProducts = PRODUCTS.filter(p => this.isFavorite(p.id));
+        if (favProducts.length === 0) {
+            return this.renderStub('heart', 'Избранное пусто', 'Нажмите ♥ на товаре');
+        }
+        return `
+        <div class="catalog-section">
+            <h1 class="catalog-title">Избранное</h1>
+            <div class="product-grid">
+                ${favProducts.map(p => this.renderProductCard(p)).join('')}
+            </div>
         </div>`;
     },
 
@@ -457,9 +504,29 @@ const App = {
                 return;
             }
 
+            // Favorite toggle on card
+            const favToggle = e.target.closest('[data-fav-toggle]');
+            if (favToggle) {
+                e.stopPropagation();
+                const id = parseInt(favToggle.dataset.favToggle);
+                this.toggleFavorite(id);
+                this.refreshCatalog();
+                if (this.currentPage === 'favorites') {
+                    document.getElementById('page-favorites').innerHTML = this.renderFavorites();
+                }
+                return;
+            }
+
             // Detail: favorite
             if (e.target.closest('[data-fav-detail]')) {
-                this.showToast('Избранное в разработке');
+                const btn = e.target.closest('[data-fav-detail]');
+                const id = parseInt(btn.dataset.favDetail);
+                this.toggleFavorite(id);
+                const isFav = this.isFavorite(id);
+                btn.classList.toggle('active', isFav);
+                const svg = btn.querySelector('svg');
+                if (svg) svg.setAttribute('fill', isFav ? 'currentColor' : 'none');
+                this.showToast(isFav ? 'Добавлено в избранное' : 'Убрано из избранного');
                 return;
             }
 
@@ -520,6 +587,7 @@ const App = {
             if (e.target.closest('[data-remove-cart]')) {
                 const idx = parseInt(e.target.closest('[data-remove-cart]').dataset.removeCart);
                 this.cart.splice(idx, 1);
+                this.saveCart();
                 this.refreshPage();
                 return;
             }
@@ -527,18 +595,30 @@ const App = {
                 const idx = parseInt(e.target.closest('[data-cart-minus]').dataset.cartMinus);
                 if (this.cart[idx].qty > 1) this.cart[idx].qty--;
                 else this.cart.splice(idx, 1);
+                this.saveCart();
                 this.refreshPage();
                 return;
             }
             if (e.target.closest('[data-cart-plus]')) {
                 const idx = parseInt(e.target.closest('[data-cart-plus]').dataset.cartPlus);
                 this.cart[idx].qty++;
+                this.saveCart();
                 this.refreshPage();
                 return;
             }
 
             if (e.target.closest('#checkout-btn')) {
-                this.showToast('Оформление заказа недоступно');
+                this.showOrderForm();
+                return;
+            }
+
+            if (e.target.closest('#order-close')) {
+                document.getElementById('order-overlay')?.remove();
+                return;
+            }
+
+            if (e.target.closest('#order-submit')) {
+                this.submitOrder();
                 return;
             }
 
@@ -583,6 +663,9 @@ const App = {
         });
         if (page === 'cart') {
             document.getElementById('page-cart').innerHTML = this.renderCart();
+        }
+        if (page === 'favorites') {
+            document.getElementById('page-favorites').innerHTML = this.renderFavorites();
         }
         this.updateCartBadge();
     },
@@ -639,6 +722,80 @@ const App = {
     formatPrice(price) {
         if (!price) return '??? ₽';
         return price.toLocaleString('ru-RU') + ' ₽';
+    },
+
+    showOrderForm() {
+        const existing = document.getElementById('order-overlay');
+        if (existing) existing.remove();
+        const overlay = document.createElement('div');
+        overlay.id = 'order-overlay';
+        overlay.className = 'order-overlay';
+        overlay.innerHTML = `
+            <div class="order-form">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                    <h2 style="font-size:18px;font-weight:700;">Оформить заявку</h2>
+                    <button id="order-close" style="background:none;border:none;color:var(--text);font-size:24px;cursor:pointer;">×</button>
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Имя *</label>
+                    <input type="text" id="order-name" placeholder="Ваше имя" style="width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;">
+                </div>
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Телефон или Telegram *</label>
+                    <input type="text" id="order-contact" placeholder="+7... или @username" style="width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;">
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label style="font-size:12px;color:var(--text-secondary);display:block;margin-bottom:6px;">Комментарий</label>
+                    <textarea id="order-comment" placeholder="Адрес, пожелания..." rows="3" style="width:100%;padding:12px;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:14px;resize:none;"></textarea>
+                </div>
+                <div style="font-size:12px;color:var(--text-secondary);margin-bottom:16px;">
+                    Ваш заказ: ${this.cart.map(i => `${i.name} (${i.size}) ×${i.qty}`).join(', ')}
+                </div>
+                <button id="order-submit" style="width:100%;padding:16px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);font-size:16px;font-weight:600;cursor:pointer;">
+                    Отправить заявку
+                </button>
+            </div>`;
+        document.body.appendChild(overlay);
+    },
+
+    async submitOrder() {
+        const name = document.getElementById('order-name')?.value.trim();
+        const contact = document.getElementById('order-contact')?.value.trim();
+        const comment = document.getElementById('order-comment')?.value.trim();
+
+        if (!name || !contact) {
+            this.showToast('Заполните имя и контакт');
+            return;
+        }
+
+        const btn = document.getElementById('order-submit');
+        if (btn) {
+            btn.textContent = 'Отправка...';
+            btn.disabled = true;
+        }
+
+        const items = this.cart.map(i => `• ${i.name} (${i.size}) ×${i.qty} — ${this.formatPrice(i.price * i.qty)}`).join('\n');
+        const total = this.cart.reduce((s, i) => s + i.price * i.qty, 0);
+        const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
+        const tgInfo = tgUser ? `\nTG: @${tgUser.username || tgUser.first_name} (id: ${tgUser.id})` : '';
+
+        const text = `🛍 Новая заявка!\n\nИмя: ${name}\nКонтакт: ${contact}${tgInfo}${comment ? '\nКомментарий: ' + comment : ''}\n\nТовары:\n${items}\n\nИтого: ${this.formatPrice(total)}`;
+
+        try {
+            const resp = await fetch('https://mirror-mini-app.vercel.app/api/webhook', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ order: { text, chatId: 1225606022 } })
+            });
+            document.getElementById('order-overlay')?.remove();
+            this.cart = [];
+            this.saveCart();
+            this.refreshPage();
+            this.showToast('Заявка отправлена!');
+        } catch(e) {
+            this.showToast('Ошибка, попробуйте позже');
+            if (btn) { btn.textContent = 'Отправить заявку'; btn.disabled = false; }
+        }
     },
 
     showToast(message) {
