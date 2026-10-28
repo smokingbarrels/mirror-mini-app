@@ -13,7 +13,7 @@ const PRODUCTS = [
         id: 2,
         name: 'Лонгслив "镜子"',
         price: 85,
-        images: ['assets/img/longsleeve-jingzi.png'],
+        images: ['assets/img/longsleeve-jingzi.png', 'assets/img/longsleeve-mirror-2.png', 'assets/img/longsleeve-mirror-3.png'],
         category: 'longsleeves',
         sizes: ['S', 'M', 'L'],
         shippingDays: 10,
