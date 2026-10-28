@@ -359,7 +359,6 @@ const App = {
     renderProfile() {
         const items = [
             { icon: '&#128230;', label: 'История заказов' },
-            { icon: '&#127760;', label: 'Язык' },
             { icon: '&#128172;', label: 'Связаться с поддержкой' },
             { icon: '&#9993;', label: 'Наш ТГ канал' }
         ];
@@ -374,6 +373,50 @@ const App = {
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"/></svg>
             </div>`).join('')}
         </div>`;
+    },
+
+    renderOrderHistory() {
+        const orders = JSON.parse(localStorage.getItem('mm_orders') || '[]');
+        const content = document.getElementById('content');
+        if (orders.length === 0) {
+            content.innerHTML = `
+            <div class="stub-page">
+                <div class="stub-icon">&#128230;</div>
+                <div class="stub-title">Заказов пока нет</div>
+                <div class="stub-text">Оформите заявку в корзине</div>
+                <button class="order-history-back" style="margin-top:20px;padding:12px 32px;background:var(--text);color:var(--bg);border:none;border-radius:var(--radius);font-size:14px;cursor:pointer;">Назад</button>
+            </div>`;
+        } else {
+            content.innerHTML = `
+            <div class="catalog-section">
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                    <button class="order-history-back" style="background:none;border:none;color:var(--text);cursor:pointer;padding:4px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m15 18-6-6 6-6"/></svg>
+                    </button>
+                    <h1 class="catalog-title" style="margin:0;">История заказов</h1>
+                </div>
+                ${orders.map(o => `
+                <div style="background:var(--card);border-radius:var(--radius);padding:16px;margin-bottom:12px;">
+                    <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                        <span style="font-weight:600;">Заявка #${String(o.id).slice(-4)}</span>
+                        <span style="color:var(--text-secondary);font-size:13px;">${o.date}</span>
+                    </div>
+                    ${o.items.map(i => `
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+                        ${i.image ? `<img src="${i.image}" style="width:36px;height:36px;border-radius:6px;object-fit:cover;">` : ''}
+                        <span style="flex:1;font-size:13px;">${i.name} (${i.size}) ×${i.qty}</span>
+                        <span style="font-size:13px;color:var(--text-secondary);">${this.formatPrice(i.price * i.qty)}</span>
+                    </div>`).join('')}
+                    <div style="text-align:right;font-weight:600;margin-top:8px;padding-top:8px;border-top:1px solid var(--border);">
+                        Итого: ${this.formatPrice(o.total)}
+                    </div>
+                </div>`).join('')}
+            </div>`;
+        }
+        content.querySelector('.order-history-back')?.addEventListener('click', () => {
+            this.currentPage = 'profile';
+            this.render();
+        });
     },
 
     renderFavorites() {
@@ -626,8 +669,10 @@ const App = {
                 const action = e.target.closest('[data-profile-action]').dataset.profileAction;
                 if (action === 'Наш ТГ канал') {
                     window.open('https://t.me/mirr_r', '_blank');
-                } else {
-                    this.showToast('Раздел в разработке');
+                } else if (action === 'Связаться с поддержкой') {
+                    window.open('https://t.me/mirshvv', '_blank');
+                } else if (action === 'История заказов') {
+                    this.renderOrderHistory();
                 }
                 return;
             }
@@ -787,6 +832,18 @@ const App = {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ order: { text, chatId: 1225606022 } })
             });
+            const order = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString('ru-RU'),
+                items: this.cart.map(i => ({ name: i.name, size: i.size, qty: i.qty, price: i.price, image: i.image })),
+                total,
+                name,
+                contact
+            };
+            const history = JSON.parse(localStorage.getItem('mm_orders') || '[]');
+            history.unshift(order);
+            localStorage.setItem('mm_orders', JSON.stringify(history));
+
             document.getElementById('order-overlay')?.remove();
             this.cart = [];
             this.saveCart();
