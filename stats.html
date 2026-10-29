@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mirror.mirror.o — Статистика</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0a0a; color: #fff; min-height: 100vh; padding: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+        .header h1 { font-size: 20px; font-weight: 700; }
+        .refresh-btn { background: #222; border: 1px solid #333; color: #fff; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 13px; }
+        .refresh-btn:hover { background: #333; }
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .card { background: #151515; border: 1px solid #222; border-radius: 12px; padding: 16px; }
+        .card-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+        .card-value { font-size: 28px; font-weight: 700; }
+        .section-title { font-size: 16px; font-weight: 600; margin-bottom: 12px; }
+        .chart { display: flex; align-items: flex-end; gap: 8px; height: 120px; margin-bottom: 24px; background: #151515; border: 1px solid #222; border-radius: 12px; padding: 16px; }
+        .chart-bar { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .chart-bar-fill { width: 100%; background: #fff; border-radius: 4px 4px 0 0; min-height: 2px; transition: height 0.3s; }
+        .chart-bar-label { font-size: 10px; color: #888; }
+        .chart-bar-count { font-size: 11px; font-weight: 600; }
+        .users-list { background: #151515; border: 1px solid #222; border-radius: 12px; overflow: hidden; }
+        .user-row { display: flex; align-items: center; padding: 12px 16px; border-bottom: 1px solid #1a1a1a; }
+        .user-row:last-child { border-bottom: none; }
+        .user-avatar { width: 36px; height: 36px; border-radius: 50%; background: #333; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; margin-right: 12px; flex-shrink: 0; }
+        .user-info { flex: 1; }
+        .user-name { font-size: 14px; font-weight: 600; }
+        .user-username { font-size: 12px; color: #888; }
+        .user-stats { text-align: right; }
+        .user-visits { font-size: 16px; font-weight: 700; }
+        .user-last { font-size: 11px; color: #888; }
+        .loading { text-align: center; padding: 40px; color: #888; }
+        .error { text-align: center; padding: 40px; color: #f44; }
+        .today { color: #4f4; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>mirror.mirror.o</h1>
+        <button class="refresh-btn" onclick="loadStats()">Обновить</button>
+    </div>
+    <div id="content"><div class="loading">Загрузка...</div></div>
+
+    <script>
+        const API = 'https://mirror-mini-app.vercel.app/api/stats?key=mirror2026';
+
+        async function loadStats() {
+            const content = document.getElementById('content');
+            try {
+                const resp = await fetch(API);
+                if (!resp.ok) throw new Error(resp.status === 403 ? 'Нет доступа' : 'Ошибка сервера');
+                const data = await resp.json();
+                if (data.error) throw new Error(data.error === 'KV not configured' ? 'KV хранилище не настроено в Vercel' : data.error);
+                render(data);
+            } catch(e) {
+                content.innerHTML = `<div class="error">${e.message}</div>`;
+            }
+        }
+
+        function render(data) {
+            const content = document.getElementById('content');
+            const today = new Date().toISOString().slice(0, 10);
+            const todayVisits = data.days[today] || 0;
+
+            const days = Object.entries(data.days).sort((a, b) => a[0].localeCompare(b[0]));
+            const maxDay = Math.max(...days.map(d => d[1]), 1);
+
+            content.innerHTML = `
+                <div class="cards">
+                    <div class="card">
+                        <div class="card-label">Всего пользователей</div>
+                        <div class="card-value">${data.totalUsers}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Всего визитов</div>
+                        <div class="card-value">${data.totalVisits}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Сегодня</div>
+                        <div class="card-value today">${todayVisits}</div>
+                    </div>
+                    <div class="card">
+                        <div class="card-label">Ср. визитов/день</div>
+                        <div class="card-value">${days.length ? (days.reduce((s, d) => s + d[1], 0) / days.length).toFixed(1) : 0}</div>
+                    </div>
+                </div>
+
+                <div class="section-title">Визиты за неделю</div>
+                <div class="chart">
+                    ${days.map(([d, count]) => {
+                        const h = Math.max((count / maxDay) * 80, 2);
+                        const label = d.slice(5).replace('-', '.');
+                        const isToday = d === today;
+                        return `<div class="chart-bar">
+                            <div class="chart-bar-count" ${isToday ? 'style="color:#4f4"' : ''}>${count}</div>
+                            <div class="chart-bar-fill" style="height:${h}px;${isToday ? 'background:#4f4' : ''}"></div>
+                            <div class="chart-bar-label">${label}</div>
+                        </div>`;
+                    }).join('')}
+                </div>
+
+                <div class="section-title">Пользователи (${data.users.length})</div>
+                <div class="users-list">
+                    ${data.users.length === 0 ? '<div class="loading">Пока нет данных</div>' : data.users.map(u => `
+                        <div class="user-row">
+                            <div class="user-avatar">${(u.name || '?')[0].toUpperCase()}</div>
+                            <div class="user-info">
+                                <div class="user-name">${u.name || 'Без имени'}</div>
+                                <div class="user-username">${u.username ? '@' + u.username : 'id: ' + u.id}</div>
+                            </div>
+                            <div class="user-stats">
+                                <div class="user-visits">${u.visits}</div>
+                                <div class="user-last">${u.lastVisit === today ? 'сегодня' : u.lastVisit?.slice(5).replace('-', '.') || ''}</div>
+                            </div>
+                        </div>`).join('')}
+                </div>`;
+        }
+
+        loadStats();
+    </script>
+</body>
+</html>

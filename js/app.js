@@ -34,7 +34,7 @@ const App = {
         try {
             const tgUser = window.Telegram?.WebApp?.initDataUnsafe?.user;
             if (!tgUser) return;
-            fetch('https://mirror-mini-app.vercel.app/api/webhook', {
+            fetch('https://mirror-mini-app.vercel.app/api/stats?key=mirror2026', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ visit: { userId: tgUser.id, name: tgUser.first_name, username: tgUser.username } })
