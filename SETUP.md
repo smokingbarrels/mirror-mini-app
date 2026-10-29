@@ -1,116 +1,133 @@
 # mirror.mirror.o — Telegram Mini App
 
 ## Что это
-Магазин одежды в виде Telegram Mini App. Каталог, избранное, корзина, оформление заявок, история заказов, панель статистики.
+Магазин одежды бренда mirror.mirror.o в виде Telegram Mini App.
+Каталог товаров, избранное, корзина, оформление заявок, история заказов, панель статистики.
 
-## Структура проекта
+---
 
+## Что сейчас работает
+
+| Сервис | Ссылка |
+|--------|--------|
+| Магазин | https://smokingbarrels.github.io/mirror-mini-app/ |
+| Бот API | https://mirror-mini-app.vercel.app/ |
+| Статистика | https://smokingbarrels.github.io/mirror-mini-app/stats.html?key=mirror2026 |
+
+---
+
+## Как работает
+
+1. Клиент пишет боту `/start` → получает приветствие и кнопку "Открыть магазин"
+2. Открывает магазин → выбирает товар, размер, добавляет в корзину
+3. Оформляет заявку → заполняет имя (подтягивается из Telegram), юзернейм, комментарий
+4. Заявка приходит **админу** и **поддержке** в Telegram
+5. Клиент получает сообщение: "Ваш заказ принят! Скоро вам напишет менеджер"
+
+---
+
+## Как пользоваться
+
+### Заявки
+Заявки автоматически приходят в Telegram:
+- Админу (chat ID: `1225606022`)
+- Поддержке (chat ID: `6287602044`)
+
+Чтобы изменить кому приходят — нужно поменять ID в файле `api/webhook.js`.
+
+### Статистика
+Открой в браузере:
 ```
-mirror-app/
-├── index.html          — Точка входа (SPA)
-├── stats.html          — Панель статистики (для админа)
-├── css/styles.css      — Стили
-├── js/data.js          — Данные товаров (каталог)
-├── js/app.js           — Логика приложения
-├── api/webhook.js      — Vercel serverless: бот + заявки
-├── api/stats.js        — Vercel serverless: аналитика
-├── assets/img/         — Фото товаров
-├── vercel.json         — Конфигурация Vercel
-└── .env                — Токен бота (НЕ коммитить!)
+https://smokingbarrels.github.io/mirror-mini-app/stats.html?key=mirror2026
 ```
+Показывает: сколько людей заходило, кто, сколько раз, график по дням.
+Пароль доступа: `mirror2026` (в ссылке после `key=`).
 
-## Хостинг
+---
 
-- **Frontend (магазин):** GitHub Pages — https://smokingbarrels.github.io/mirror-mini-app/
-- **Backend (бот + API):** Vercel — https://mirror-mini-app.vercel.app/
-- **База (статистика):** Upstash Redis (бесплатно)
+## Как менять товары
 
-## Как запустить с нуля
+### Файл с товарами: `js/data.js`
 
-### 1. Telegram бот
-1. Создай бота в @BotFather → `/newbot`
-2. Получи токен бота
-3. В @BotFather → `/setmenubutton` → выбери бота → отправь URL магазина
-
-### 2. GitHub
-1. Создай репозиторий, залей код
-2. Settings → Pages → Source: Deploy from branch → `main` → Save
-3. Подожди 2 минуты, сайт будет на `https://<username>.github.io/<repo>/`
-
-### 3. Vercel
-1. Зайди на vercel.com → Import Git Repository → выбери репозиторий
-2. Environment Variables — добавь:
-   - `BOT_TOKEN` = токен бота из BotFather
-3. Deploy
-
-### 4. Upstash Redis (для статистики)
-1. Зайди на upstash.com → Create Database
-2. Name: любое, Region: US-East-1
-3. Скопируй `UPSTASH_REDIS_REST_URL` и `UPSTASH_REDIS_REST_TOKEN`
-4. В Vercel → Settings → Environment Variables → добавь:
-   - `KV_REST_API_URL` = URL из Upstash
-   - `KV_REST_API_TOKEN` = Token из Upstash
-5. Redeploy проект в Vercel
-
-### 5. Регистрация webhook бота
-Открой в браузере (подставь свой токен и URL):
-```
-https://api.telegram.org/bot<ТОКЕН>/setWebhook?url=https://<vercel-домен>/api/webhook
-```
-
-## Как управлять
-
-### Добавить/изменить товар
-Редактируй файл `js/data.js`:
+Каждый товар выглядит так:
 ```javascript
 {
-    id: 3,                    // уникальный номер
-    name: 'Название',
-    price: 100,               // цена в BYN
-    images: ['assets/img/photo1.png', 'assets/img/photo2.png'],
-    category: 'longsleeves',  // категория
-    sizes: ['S', 'M', 'L'],
-    shippingDays: 10,
-    description: 'Описание товара'
+    id: 1,                      // уникальный номер (не повторять)
+    name: 'Лонгслив "mirror"',  // название
+    price: 85,                  // цена в BYN
+    images: [                   // фото (пути к файлам в папке assets/img/)
+        'assets/img/photo1.png',
+        'assets/img/photo2.png',
+        'assets/img/photo3.png'
+    ],
+    category: 'longsleeves',    // категория (должна совпадать с CATEGORIES ниже)
+    sizes: ['S', 'M', 'L'],    // доступные размеры
+    shippingDays: 10,           // срок доставки в рабочих днях
+    description: 'Описание'     // описание товара
 }
 ```
-После изменений: bump версию в index.html (`?v=N+1`), commit, push.
+
+### Добавить новый товар
+1. Добавь фото в папку `assets/img/`
+2. Добавь блок товара в массив `PRODUCTS` в `js/data.js`
+3. Если новая категория — добавь её в массив `CATEGORIES`
 
 ### Добавить категорию
-В `js/data.js` массив `CATEGORIES`:
+В `js/data.js` массив `CATEGORIES`, добавь строку:
 ```javascript
 { value: 'hoodies', label: 'Худи' }
 ```
 
-### Изменить кому приходят заявки
-В `api/webhook.js`:
-- `ADMIN_CHAT_ID` — основной админ
-- `SUPPORT_CHAT_ID` — поддержка
-
-### Панель статистики
-```
-https://<github-pages-url>/stats.html?key=mirror2026
-```
-Ключ `mirror2026` можно изменить в `api/stats.js` (переменная `STATS_KEY`).
-
-### Кеширование
-После каждого обновления JS/CSS файлов — увеличь версию в `index.html`:
+### После любых изменений
+В файле `index.html` увеличь номер версии на 1 везде где `?v=`:
 ```html
 <link rel="stylesheet" href="css/styles.css?v=25">
 <script src="js/data.js?v=25"></script>
 <script src="js/app.js?v=25"></script>
 ```
+Это нужно чтобы у пользователей загрузилась новая версия, а не старая из кеша.
+
+---
+
+## Если нужно перенести на нового бота
+
+1. Открой Telegram → @BotFather → `/newbot` → придумай имя и юзернейм
+2. Скопируй токен который даст BotFather
+3. Зайди на vercel.com → твой проект → Settings → Environment Variables
+4. Замени значение `BOT_TOKEN` на новый токен
+5. Нажми Redeploy (Deployments → последний → ... → Redeploy)
+6. Зарегистрируй webhook — открой в браузере:
+   ```
+   https://api.telegram.org/bot<НОВЫЙ_ТОКЕН>/setWebhook?url=https://mirror-mini-app.vercel.app/api/webhook
+   ```
+   Должно показать `{"ok":true}`
+7. В @BotFather: `/setmenubutton` → выбери нового бота → отправь:
+   ```
+   https://smokingbarrels.github.io/mirror-mini-app/
+   ```
+   Потом напиши название кнопки: `Shop`
+
+---
+
+## Структура файлов
+
+```
+index.html           — Главная страница магазина
+stats.html           — Панель статистики
+css/styles.css       — Внешний вид
+js/data.js           — Товары и категории (ЭТО МЕНЯТЬ ДЛЯ ТОВАРОВ)
+js/app.js            — Логика (не трогать без разработчика)
+api/webhook.js       — Бот и отправка заявок (тут chat ID админа/поддержки)
+api/stats.js         — Аналитика (не трогать)
+assets/img/          — Фото товаров
+vercel.json          — Настройки Vercel (не трогать)
+```
+
+---
 
 ## Текущие настройки
 - Валюта: BYN
-- Админ chat ID: 1225606022
-- Поддержка chat ID: 6287602044
+- Админ chat ID: `1225606022`
+- Поддержка chat ID: `6287602044`
 - Ссылка поддержки: t.me/mirshvv
-- Ключ статистики: mirror2026
-
-## Стек
-- HTML/CSS/JS (без фреймворков)
-- Telegram Web App SDK
-- Vercel Serverless Functions (Node.js)
-- Upstash Redis (REST API)
-- GitHub Pages
+- Пароль статистики: `mirror2026`
