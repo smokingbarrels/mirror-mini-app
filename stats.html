@@ -44,7 +44,8 @@
     <div id="content"><div class="loading">Загрузка...</div></div>
 
     <script>
-        const API = 'https://mirror-mini-app.vercel.app/api/stats?key=mirror2026';
+        const params = new URLSearchParams(window.location.search);
+        const API = 'https://mirror-mini-app.vercel.app/api/stats?key=' + (params.get('key') || '');
 
         async function loadStats() {
             const content = document.getElementById('content');
