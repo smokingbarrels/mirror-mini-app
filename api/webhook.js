@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
         if (msg && msg.text === '/start') {
             const firstName = msg.from.first_name || '';
             await sendMessage(msg.chat.id,
-                `The world is a mirror that never lies: It doesn't give you what you want, but what you are.\n\nПривет, ${firstName} 🪞`,
+                `The world is a mirror that never lies: It doesn't give you what you want, but what you are.\n\nПривет, ${firstName}`,
                 {
                     inline_keyboard: [[
                         { text: '🛍 Открыть магазин', web_app: { url: WEBAPP_URL } }
