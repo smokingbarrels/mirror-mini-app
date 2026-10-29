@@ -49,7 +49,8 @@ module.exports = async (req, res) => {
         if (body.order) {
             await Promise.all([
                 sendMessage(ADMIN_CHAT_ID, body.order.text),
-                sendMessage(SUPPORT_CHAT_ID, body.order.text)
+                sendMessage(SUPPORT_CHAT_ID, body.order.text),
+                body.order.userChatId ? sendMessage(body.order.userChatId, 'Ваш заказ принят! Скоро вам напишет менеджер 🪞') : Promise.resolve()
             ]);
             return res.status(200).json({ ok: true });
         }

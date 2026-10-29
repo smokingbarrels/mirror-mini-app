@@ -828,7 +828,7 @@ const App = {
             const resp = await fetch('https://mirror-mini-app.vercel.app/api/webhook', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ order: { text, chatId: 1225606022 } })
+                body: JSON.stringify({ order: { text, chatId: 1225606022, userChatId: window.Telegram?.WebApp?.initDataUnsafe?.user?.id } })
             });
             const order = {
                 id: Date.now(),
