@@ -47,10 +47,10 @@ async function kvGet(key) {
 
 async function kvSet(key, value) {
     return new Promise((resolve, reject) => {
-        const body = JSON.stringify({ key, value });
+        const body = JSON.stringify(["SET", key, value]);
         const url = new URL(KV_URL);
         const req = https.request(url, {
-            method: 'PUT',
+            method: 'POST',
             headers: {
                 'Authorization': `Bearer ${KV_TOKEN}`,
                 'Content-Type': 'application/json',
