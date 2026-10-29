@@ -27,6 +27,7 @@ function sendMessage(chatId, text, replyMarkup) {
 }
 
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID || '1225606022';
+const SUPPORT_CHAT_ID = '6287602044';
 
 module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -46,7 +47,10 @@ module.exports = async (req, res) => {
 
         // Order from mini-app
         if (body.order) {
-            await sendMessage(ADMIN_CHAT_ID, body.order.text);
+            await Promise.all([
+                sendMessage(ADMIN_CHAT_ID, body.order.text),
+                sendMessage(SUPPORT_CHAT_ID, body.order.text)
+            ]);
             return res.status(200).json({ ok: true });
         }
 
