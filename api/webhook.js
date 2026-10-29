@@ -44,6 +44,14 @@ module.exports = async (req, res) => {
     try {
         const body = req.body;
 
+        // Visit tracking from mini-app
+        if (body.visit) {
+            const v = body.visit;
+            const uname = v.username ? `@${v.username}` : `id: ${v.userId}`;
+            await sendMessage(ADMIN_CHAT_ID, `👁 Зашёл: ${v.name || 'Пользователь'} (${uname})`);
+            return res.status(200).json({ ok: true });
+        }
+
         // Order from mini-app
         if (body.order) {
             await sendMessage(ADMIN_CHAT_ID, body.order.text);
